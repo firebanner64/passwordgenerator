@@ -5,7 +5,9 @@ import PyQt5
 import sys
 import string
 import random
+import os
 import pyperclip
+import json
 app = QApplication(sys.argv)
 class Ui_mainWindow(QMainWindow):
 
@@ -13,6 +15,7 @@ class Ui_mainWindow(QMainWindow):
         super().__init__()
         self.setupUi(self)
         self.hook_functions()
+        self.load_save_file()
     def generate(self):
         self.passwordList.clear()
         capitals = self.capitalsCheck.isChecked()
@@ -40,20 +43,46 @@ class Ui_mainWindow(QMainWindow):
                 generated_passwords.append(''.join(current))
         else: 
             for i in range(number_of_passwords):
-                current = str()
-                for j in range(password_length):
-                    current = current + random.choice(char_pool)
-                print(current)
-                generated_passwords.append(current)
+                generated_passwords.append(self.n_random_char_from_pool(char_pool, password_length))
         self.display_list(generated_passwords)
     def hook_functions(self) -> None:
         self.generateButton.clicked.connect(self.generate)
         self.copyTextButton.clicked.connect(self.copy_selected)
+        self.saveButton.clicked.connect(self.save_save_file)
     def copy_selected(self) -> None:
         pyperclip.copy(self.passwordList.currentItem().text())
     def display_list(self, ls: list) -> None:
         for i in ls:
             self.passwordList.addItem(i)
+    def load_save_file(self):
+        # os code and json code not created by program author
+        cwd = os.getcwd()
+        try:
+            with open(cwd + R"\settings.json", 'r+') as f:
+                contents = f.read()
+                if contents == '':
+                    f.seek(0)
+                    f.write(json.dumps({'npsdws':5,'lnpsdws':10,'caps':True,'symbols':False,'numbers':True}))
+                loads = json.loads(contents)
+                self.numberOfPasswords.setValue(loads['npsdws'])
+                self.passwordLength.setValue(loads['lnpsdws'])
+                self.capitalsCheck.setChecked(loads['caps'])
+                self.symbolsCheck.setChecked(loads['symbols'])
+                self.numbersCheck.setChecked(loads['numbers'])
+        except Exception:
+            print(Exception)
+            open(cwd + R"\settings.json", 'x')
+            self.load_save_file()
+    def save_save_file(self):
+        cwd = os.getcwd()
+        capitals = self.capitalsCheck.isChecked()
+        symbols = self.symbolsCheck.isChecked()
+        numbers = self.numbersCheck.isChecked()
+        number_of_passwords = self.numberOfPasswords.value()
+        password_length = self.passwordLength.value()
+        with open(cwd + R"\settings.json", 'w') as f:
+            f.write(json.dumps({'npsdws':number_of_passwords,'lnpsdws':password_length,'caps':capitals,'symbols':symbols,'numbers':numbers}))
+        
     def n_random_char_from_pool(self, pool: str, n: int) -> str:
         ret = str()
         for _ in range(n):
@@ -100,10 +129,12 @@ class Ui_mainWindow(QMainWindow):
         self.specialCharactersLine = QtWidgets.QLineEdit(mainWindow)
         self.specialCharactersLine.setGeometry(QtCore.QRect(560, 170, 71, 22))
         self.specialCharactersLine.setObjectName("specialCharactersLine")
-        self.specialCharactersLine.setText(" !#$%&'()*+,-./:;=?@[\]^_`{|}~")
         self.label = QtWidgets.QLabel(mainWindow)
-        self.label.setGeometry(QtCore.QRect(505, 170, 101, 16))
+        self.label.setGeometry(QtCore.QRect(454, 170, 101, 16))
         self.label.setObjectName("label")
+        self.saveButton = QtWidgets.QPushButton(mainWindow)
+        self.saveButton.setGeometry(QtCore.QRect(220, 340, 93, 61))
+        self.saveButton.setObjectName("saveButton")
 
         self.retranslateUi(mainWindow)
         self.passwordList.setCurrentRow(-1)
@@ -118,7 +149,9 @@ class Ui_mainWindow(QMainWindow):
         self.symbolsCheck.setText(_translate("mainWindow", "Symbols"))
         self.numbersCheck.setText(_translate("mainWindow", "Numbers"))
         self.copyTextButton.setText(_translate("mainWindow", "Copy Text"))
-        self.label.setText(_translate("mainWindow", "Symbols"))
+        self.specialCharactersLine.setText(_translate("mainWindow", "\" !\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~\""))
+        self.label.setText(_translate("mainWindow", "Special Characters"))
+        self.saveButton.setText(_translate("mainWindow", "Save"))
 
 window = Ui_mainWindow()
 window.show()
