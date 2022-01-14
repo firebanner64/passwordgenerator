@@ -1,3 +1,4 @@
+# Modules PyQt5, sys, string, random, pyperclip not written by program author
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow
 import PyQt5
@@ -12,8 +13,6 @@ class Ui_mainWindow(QMainWindow):
         super().__init__()
         self.setupUi(self)
         self.hook_functions()
-        #self.passwordList.addItem("test")
-        #self.generate()
     def generate(self):
         self.passwordList.clear()
         capitals = self.capitalsCheck.isChecked()
@@ -21,38 +20,46 @@ class Ui_mainWindow(QMainWindow):
         numbers = self.numbersCheck.isChecked()
         number_of_passwords = self.numberOfPasswords.value()
         password_length = self.passwordLength.value()
+
+        generated_passwords = list()
         char_pool = string.ascii_lowercase
+        # random functions and string not created by program author
         if capitals:
             char_pool = char_pool + string.ascii_uppercase
         if numbers:
             char_pool = char_pool + string.digits + string.digits
         if symbols:
             symbol_pool = self.specialCharactersLine.text()
-            number_of_symbols = random.randint(1, 3)
+            number_of_symbols = random.randint(1, int(password_length / 2))
             length_minus_symbols = password_length - number_of_symbols
-            
             for i in range(number_of_passwords):
-                current = str()
-                for j in range(number_of_symbols):
-                    current = current + random.choice(symbol_pool)
-                for j in range(length_minus_symbols):
-                    current = current + random.choice(char_pool)
-                current = list(current)
+                selected_symbols = self.n_random_char_from_pool(symbol_pool, number_of_symbols)
+                selected_chars = self.n_random_char_from_pool(char_pool, length_minus_symbols)
+                current = list(selected_chars + selected_symbols)
                 random.shuffle(current)
-                self.passwordList.addItem(''.join(current))
+                generated_passwords.append(''.join(current))
         else: 
             for i in range(number_of_passwords):
                 current = str()
                 for j in range(password_length):
                     current = current + random.choice(char_pool)
                 print(current)
-                self.passwordList.addItem(current)
-       
-    def hook_functions(self):
+                generated_passwords.append(current)
+        self.display_list(generated_passwords)
+    def hook_functions(self) -> None:
         self.generateButton.clicked.connect(self.generate)
         self.copyTextButton.clicked.connect(self.copy_selected)
-    def copy_selected(self):
+    def copy_selected(self) -> None:
         pyperclip.copy(self.passwordList.currentItem().text())
+    def display_list(self, ls: list) -> None:
+        for i in ls:
+            self.passwordList.addItem(i)
+    def n_random_char_from_pool(self, pool: str, n: int) -> str:
+        ret = str()
+        for _ in range(n):
+            ret += random.choice(pool)
+        return ret
+    # Ui library not created by program author
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
         mainWindow.resize(651, 412)
@@ -93,7 +100,7 @@ class Ui_mainWindow(QMainWindow):
         self.specialCharactersLine = QtWidgets.QLineEdit(mainWindow)
         self.specialCharactersLine.setGeometry(QtCore.QRect(560, 170, 71, 22))
         self.specialCharactersLine.setObjectName("specialCharactersLine")
-        self.specialCharactersLine.setText(" !#$%&'()*+,-./:;<=>?@[\]^_`{|}~")
+        self.specialCharactersLine.setText(" !#$%&'()*+,-./:;=?@[\]^_`{|}~")
         self.label = QtWidgets.QLabel(mainWindow)
         self.label.setGeometry(QtCore.QRect(505, 170, 101, 16))
         self.label.setObjectName("label")
@@ -101,7 +108,6 @@ class Ui_mainWindow(QMainWindow):
         self.retranslateUi(mainWindow)
         self.passwordList.setCurrentRow(-1)
         QtCore.QMetaObject.connectSlotsByName(mainWindow)
-
     def retranslateUi(self, mainWindow):
         _translate = QtCore.QCoreApplication.translate
         mainWindow.setWindowTitle(_translate("mainWindow", "Password Generator"))
