@@ -62,13 +62,16 @@ class Ui_mainWindow(QMainWindow):
                 contents = f.read()
                 if contents == '':
                     f.seek(0)
-                    f.write(json.dumps({'npsdws':5,'lnpsdws':10,'caps':True,'symbols':False,'numbers':True}))
+                    f.write(json.dumps({'npsdws':5,'lnpsdws':10,'caps':True,'symbols':False,'numbers':True,'spechars':"!#$%&()*+,-./:;<=>?@[\]^_`{|}~"}))
+                    f.seek(0)
+                    contents = f.read()
                 loads = json.loads(contents)
                 self.numberOfPasswords.setValue(loads['npsdws'])
                 self.passwordLength.setValue(loads['lnpsdws'])
                 self.capitalsCheck.setChecked(loads['caps'])
                 self.symbolsCheck.setChecked(loads['symbols'])
                 self.numbersCheck.setChecked(loads['numbers'])
+                self.specialCharactersLine.setText(loads['spechars'])
         except Exception:
             print(Exception)
             open(cwd + R"\settings.json", 'x')
@@ -80,8 +83,9 @@ class Ui_mainWindow(QMainWindow):
         numbers = self.numbersCheck.isChecked()
         number_of_passwords = self.numberOfPasswords.value()
         password_length = self.passwordLength.value()
+        spechars = self.specialCharactersLine.text()
         with open(cwd + R"\settings.json", 'w') as f:
-            f.write(json.dumps({'npsdws':number_of_passwords,'lnpsdws':password_length,'caps':capitals,'symbols':symbols,'numbers':numbers}))
+            f.write(json.dumps({'npsdws':number_of_passwords,'lnpsdws':password_length,'caps':capitals,'symbols':symbols,'numbers':numbers,'spechars':spechars}))
         
     def n_random_char_from_pool(self, pool: str, n: int) -> str:
         ret = str()
